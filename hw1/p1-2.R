@@ -66,19 +66,35 @@ simulate1B(paramVect, 100000);
 paramMatrix <- matrix(c(0.0,1.0,2.0,3.0,0.5, 0.25, 0.15, 0.10), nrow=4);
 
 #Problem 2, Part A.
-p_of_c <- sum(apply(paramMatrix, 1, function(row_a) {
+p_of_c1 <- sum(apply(paramMatrix, 1, function(row_a) {
+  # compute the sum of the probabilities that comprise P(|T_A - T_B| <= 1.25)
   return(sum(apply(paramMatrix, 1, function(row_b) {
+    # if bus A and bus B arrived within 1.25 minutes of each other
     if(abs(row_b[1] - row_a[1]) <= 1.25) {
-      return(row_b[2] * row_a[2]);
+      return(row_b[2] * row_a[2]); # return P(T_A=__ ^ T_B=__)
     } else {
       return(0);
     }
   })));
 }));
-p_of_c
+p_of_c1
+
+p_of_c2 <- sum(apply(paramMatrix, 1, function(row_a) {
+  # compute the sum of the probabilities to get P(T_A - T_B <= 1.25)
+  return(sum(apply(paramMatrix, 1, function(row_b) {
+    # if bus A arrived before bus B or within 1.25 minutes of bus B leaving
+    if(row_a[1] - row_b[1] <= 1.25) {
+      return(row_a[2] * row_b[2]); # return P(T_A=__ ^ T_B=__)
+    } else {
+      return(0);
+    }
+  })));
+}));
+p_of_c2
 
 #Problem 2, Part B.
-simulate2B <- function(paramMatrix, p_of_c) {
+
+simulate2B1 <- function(paramMatrix, p_of_c) {
   ret3 <- apply(paramMatrix, 1, function(row_a) {
     ret2 <- apply(paramMatrix, 1, function(row_b) {
       arrival_diff = row_b[1] - row_a[1];
@@ -98,4 +114,26 @@ simulate2B <- function(paramMatrix, p_of_c) {
   answer = (sum(ret3) / p_of_c);
   return(answer);
 }
-simulate2B(paramMatrix, p_of_c);
+simulate2B1(paramMatrix, p_of_c1);
+
+simulate2B2 <- function(paramMatrix, p_of_c) {
+  ret3 <- apply(paramMatrix, 1, function(row_a) {
+    ret2 <- apply(paramMatrix, 1, function(row_b) {
+      arrival_diff = row_a[1] - row_b[1];
+      if(arrival_diff <= 1.25) {
+        if(arrival_diff < 0) {
+          return(row_a[2]*row_b[2]);
+        } else {
+          return(0);
+        }
+      } else {
+        return(0);
+      }
+    });
+    return(sum(ret2));
+  });
+  cat(print(ret3));cat(sprintf("\n"));
+  answer = (sum(ret3) / p_of_c);
+  return(answer);
+}
+simulate2B2(paramMatrix, p_of_c2);
